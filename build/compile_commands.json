@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/mynet/build",
+  "command": "/usr/bin/clang++ -I/home/vcpkg/installed/x64-linux/include -I/home/mynet/lib  -std=c++20  -g -o CMakeFiles/mynet.dir/main.cpp.o -c /home/mynet/main.cpp",
+  "file": "/home/mynet/main.cpp"
+}
+]
