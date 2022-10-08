@@ -1,8 +1,10 @@
 #include <bits/types/struct_iovec.h>
 #include <chrono>
+#include <cstddef>
 #include <functional>
 #include <iostream>
 #include <liburing.h>
+#include <netinet/in.h>
 #include <thread>
 using namespace std;
 
@@ -16,7 +18,7 @@ struct io_data {
   io_type type;
   iovec iovecs;
   int fd;
-  
+  sockaddr *sockAddr;
 };
 
 class MoChengIO {
@@ -41,7 +43,9 @@ public:
 
       case M_ACCEPT:
         cout << "accept" << endl;
-
+        cout<<cqe->res<<":  12314:  "<<(char *)data->iovecs.iov_base<<endl;
+         SubmitAccept(data->fd,data->sockAddr);
+        
         break;
       case M_READ:
         cout << "read\n" << (char *)data->iovecs.iov_base << endl;
@@ -72,7 +76,7 @@ public:
     io_uring_sqe_set_data(sqe, data);
     io_uring_submit(&ring);
   }
-  void SubmitWrite( io_data *data) {
+  void SubmitWrite(io_data *data) {
     sqe = io_uring_get_sqe(&ring);
     // struct io_data *data;
 
@@ -82,6 +86,20 @@ public:
     // data->iovecs.iov_len = SIZE;
 
     io_uring_prep_writev(sqe, data->fd, &data->iovecs, 1, 0);
+    io_uring_sqe_set_data(sqe, data);
+    io_uring_submit(&ring);
+  }
+  void SubmitAccept(int sockFd, sockaddr *sockAddr) {
+    sqe = io_uring_get_sqe(&ring);
+    socklen_t size = sizeof(sockaddr_in);
+    io_uring_prep_accept(sqe, sockFd, sockAddr, &size, 0);
+    struct io_data *data;
+    data = (io_data *)malloc(SIZE + sizeof(io_data));
+    data->iovecs.iov_base = data + 1;
+    data->iovecs.iov_len = SIZE;
+    data->type = io_type::M_ACCEPT;
+    data->fd = sockFd;
+    data->sockAddr = sockAddr;
     io_uring_sqe_set_data(sqe, data);
     io_uring_submit(&ring);
   }

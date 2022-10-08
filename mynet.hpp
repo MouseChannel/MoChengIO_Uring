@@ -39,10 +39,10 @@ public:
     socklen_t clientAddrSize = sizeof(clientAddr);
     printf("accepting:...\n");
     MoChengIO myio;
-    thread t([&myio]() {
-      myio.Work();
-    });
-
+    thread t([&myio]() { myio.Work(); });
+    // myio.SubmitAccept(listenfd, (sockaddr *)&clientAddr);
+    // t.join();
+    // return ;
     while (true) {
 
       int connfd =
@@ -56,9 +56,9 @@ public:
       // read(connfd, mes, sizeof(mes));
       // printf("Message form server: %s\n", mes);
       myio.SubmitRead(connfd);
-      close(connfd);
+      // close(connfd);
     }
-    
+
     close(listenfd);
   }
 };
